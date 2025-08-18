@@ -1,31 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography } from '@mui/material';
-import UserTable from '../components/UserTable';
-import { listarUsuarios, bajaUsuario } from '../hooks/useApi';
+import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { useUsuarios } from '../hooks/useUsuarios';
+import UsuariosTable from '../components/UserTable';
+import { useNavigate } from 'react-router-dom';
 
-function Home() {
-  const [usuarios, setUsuarios] = useState([]);
-
-  const cargarUsuarios = async () => {
-    const data = await listarUsuarios();
-    setUsuarios(data);
-  };
-
-  const handleBaja = async (id) => {
-    await bajaUsuario(id);
-    cargarUsuarios();
-  };
+export default function Home() {
+  const { usuarios, listarUsuarios, bajaUsuario, loading } = useUsuarios();
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    cargarUsuarios();
+    listarUsuarios();
   }, []);
+
+  const handleBaja = async (id) => {
+    if (!window.confirm('¿Desea dar de baja a este usuario?')) return;
+    await bajaUsuario(id);
+    await listarUsuarios();
+  };
+
+  const handleVer = (user) => {
+    setSelectedUser(user);
+    setModalOpen(true);
+  };
 
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>Lista de Usuarios</Typography>
-      <UserTable usuarios={usuarios} onBaja={handleBaja} />
+
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <UsuariosTable
+          usuarios={usuarios}
+          onModificar={(user) => navigate(`/modificar?id=${user.id}`)}
+          onBaja={handleBaja}
+          onVer={handleVer}
+        />
+      )}
+
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+        <DialogTitle>Detalles del Usuario</DialogTitle>
+        <DialogContent>
+          {selectedUser && Object.entries(selectedUser).map(([key, value]) => (
+            <Typography key={key}><strong>{key}:</strong> {value}</Typography>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalOpen(false)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
-
-export default Home;

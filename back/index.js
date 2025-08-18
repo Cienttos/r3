@@ -72,6 +72,8 @@ app.get("/usuario/lista", async (req, res) => {
     }
 });
 
+app.get("/usu")
+
 app.delete("/usuario/eliminar", async (req, res) => {
     const { id } = req.query;
     try {

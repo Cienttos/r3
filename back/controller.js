@@ -1,5 +1,6 @@
 import { connectToDatabase } from './db.js';
 
+// Obtener un usuario por ID
 export async function obtenerUsuario(id) {
     let connection;
     try {
@@ -11,12 +12,13 @@ export async function obtenerUsuario(id) {
         return rows;
     } catch (error) {
         console.error('Error al obtener usuario:', error);
-        throw error;
+        throw new Error('No se pudo obtener el usuario');
     } finally {
         if (connection) await connection.end();
     }
 }
 
+// Dar de alta un usuario, evitando duplicados por email
 export async function altaUsuario(data) {
     let connection;
     try {
@@ -24,6 +26,16 @@ export async function altaUsuario(data) {
         const fecha_alta = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
         connection = await connectToDatabase();
+
+        // Verificar si el email ya existe
+        const [existing] = await connection.execute(
+            'SELECT id FROM usuarios WHERE email = ?',
+            [email]
+        );
+        if (existing.length > 0) {
+            throw new Error('Ya existe un usuario con ese email');
+        }
+
         const [result] = await connection.execute(
             `INSERT INTO usuarios 
             (nombre, apellido, direccion, telefono, celular, fecha_nacimiento, email, contrasenia, fecha_alta, activa) 
@@ -33,19 +45,30 @@ export async function altaUsuario(data) {
 
         return result.insertId;
     } catch (error) {
-        console.error('Error al dar de alta usuario:', error);
+        console.error('Error al dar de alta usuario:', error.message);
         throw error;
     } finally {
         if (connection) await connection.end();
     }
 }
 
+// Modificar usuario
 export async function modificarUsuario(id, data) {
     let connection;
     try {
         const { nombre, apellido, direccion, telefono, celular, fecha_nacimiento, email, contrasenia } = data;
 
         connection = await connectToDatabase();
+
+        // Verificar si el email ya existe en otro usuario
+        const [existing] = await connection.execute(
+            'SELECT id FROM usuarios WHERE email = ? AND id != ?',
+            [email, id]
+        );
+        if (existing.length > 0) {
+            throw new Error('El email ya está en uso por otro usuario');
+        }
+
         const [result] = await connection.execute(
             `UPDATE usuarios 
             SET nombre = ?, apellido = ?, direccion = ?, telefono = ?, celular = ?, fecha_nacimiento = ?, email = ?, contrasenia = ? 
@@ -55,13 +78,14 @@ export async function modificarUsuario(id, data) {
 
         return result.affectedRows > 0;
     } catch (error) {
-        console.error('Error al modificar usuario:', error);
+        console.error('Error al modificar usuario:', error.message);
         throw error;
     } finally {
         if (connection) await connection.end();
     }
 }
 
+// Dar de baja usuario
 export async function bajaUsuario(id) {
     let connection;
     try {
@@ -77,13 +101,14 @@ export async function bajaUsuario(id) {
 
         return result.affectedRows > 0;
     } catch (error) {
-        console.error('Error al dar de baja usuario:', error);
-        throw error;
+        console.error('Error al dar de baja usuario:', error.message);
+        throw new Error('No se pudo dar de baja al usuario');
     } finally {
         if (connection) await connection.end();
     }
 }
 
+// Eliminar usuario
 export async function eliminarUsuario(id) {
     let connection;
     try {
@@ -95,13 +120,14 @@ export async function eliminarUsuario(id) {
 
         return result.affectedRows > 0;
     } catch (error) {
-        console.error('Error al eliminar usuario:', error);
-        throw error;
+        console.error('Error al eliminar usuario:', error.message);
+        throw new Error('No se pudo eliminar al usuario');
     } finally {
         if (connection) await connection.end();
     }
 }
 
+// Listar todos los usuarios activos
 export async function listarUsuarios() {
     let connection;
     try {
@@ -111,8 +137,24 @@ export async function listarUsuarios() {
         );
         return rows;
     } catch (error) {
-        console.error('Error al listar usuarios:', error);
-        throw error;
+        console.error('Error al listar usuarios:', error.message);
+        throw new Error('No se pudieron listar los usuarios');
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+export async function listarUsuariosBaja() {
+    let connection;
+    try {
+        connection = await connectToDatabase();
+        const [rows] = await connection.execute(
+            'SELECT * FROM usuarios WHERE activa = 0'
+        );
+        return rows;
+    } catch (error) {
+        console.error('Error al listar usuarios dados de baja:', error.message);
+        throw new Error('No se pudieron listar los usuarios dados de baja');
     } finally {
         if (connection) await connection.end();
     }
