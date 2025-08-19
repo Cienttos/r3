@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Stack, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { TextField, Button, Box, Typography, Stack, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
 
 export default function CrearUsuario() {
@@ -16,13 +17,13 @@ export default function CrearUsuario() {
     if (name === 'nombre' || name === 'apellido') {
       val = val.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
     }
-    setForm({ ...form, [name]: val });
+    setForm(prev => ({ ...prev, [name]: val }));
   };
 
   const validarFormulario = () => {
-    const textoValido = (val) => val && !/^\s*$/.test(val);
-    const emailValido = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-    if (!textoValido(form.nombre) || !textoValido(form.apellido)) return 'Nombre y apellido no pueden ser vacíos ni contener números';
+    const textoValido = val => val && !/^\s*$/.test(val);
+    const emailValido = val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    if (!textoValido(form.nombre) || !textoValido(form.apellido)) return 'Nombre y apellido no pueden estar vacíos ni contener números';
     if (!textoValido(form.direccion)) return 'La dirección es obligatoria';
     if (!textoValido(form.telefono) || !textoValido(form.celular)) return 'Teléfono y celular son obligatorios';
     if (!form.fecha_nacimiento) return 'Debe ingresar una fecha de nacimiento';
@@ -51,7 +52,7 @@ export default function CrearUsuario() {
         setSnackbar({ open: true, type: 'error', message: 'No se pudo crear el usuario' });
       }
     } catch (err) {
-      setSnackbar({ open: true, type: 'error', message: 'Error al crear usuario: ' + err.message });
+      setSnackbar({ open: true, type: 'error', message: 'Error: ' + err.message });
     }
     setConfirmOpen(false);
   };
@@ -77,17 +78,21 @@ export default function CrearUsuario() {
         </Stack>
       </form>
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Confirmar creación</DialogTitle>
+      {/* Modal moderno */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p:2 } }}>
+        <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          Confirmar creación
+          <IconButton onClick={() => setConfirmOpen(false)} size="small"><Close /></IconButton>
+        </DialogTitle>
         <DialogContent>¿Desea crear este usuario?</DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(false)}>Cancelar</Button>
-          <Button color="primary" onClick={confirmarCrear}>Crear</Button>
+          <Button color="primary" variant="contained" onClick={confirmarCrear}>Crear</Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.type}>{snackbar.message}</Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} anchorOrigin={{ vertical:'top', horizontal:'right' }}>
+        <Alert severity={snackbar.type} sx={{ width: '100%' }}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );
