@@ -11,62 +11,74 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, type: '', message: '' });
+  const [snackbar, setSnackbar] = useState({ open:false, type:'', message:'' });
   const navigate = useNavigate();
 
   useEffect(() => { listarUsuarios(); }, []);
 
-  const handleBaja = (id) => { setUserToDelete(id); setConfirmOpen(true); };
+  const handleBaja = (id) => {
+    setUserToDelete(id);
+    setConfirmOpen(true);
+  };
+
   const confirmarBaja = async () => {
     try {
       await bajaUsuario(userToDelete);
       await listarUsuarios();
       setSnackbar({ open:true, type:'success', message:'Usuario dado de baja correctamente' });
-    } catch(err){
-      setSnackbar({ open:true, type:'error', message:'Error: '+err.message });
+    } catch (err) {
+      setSnackbar({ open:true, type:'error', message:'Error al dar de baja: ' + err.message });
     }
-    setConfirmOpen(false); setUserToDelete(null);
+    setConfirmOpen(false);
+    setUserToDelete(null);
   };
-  const handleVer = (user) => { setSelectedUser(user); setModalOpen(true); };
 
-  const userFields = user => Object.entries(user).map(([key,value]) => ({
-    icon: key.includes('email') ? <Email color="error" /> :
-          key.includes('nombre') || key.includes('apellido') ? <Person color="primary" /> :
-          key.includes('direccion') ? <HomeIcon color="secondary" /> :
-          key.includes('telefono') ? <Phone color="success" /> :
-          key.includes('celular') ? <PhoneAndroid color="success" /> :
-          key.includes('contrasenia') ? <Lock color="warning" /> :
-          key.includes('fecha') ? <CalendarMonth color="action" /> : <Person />,
-    label: key.replace('_',' ').toUpperCase(),
-    value: key==='contrasenia' ? '••••••••' : value
-  }));
+  const handleVer = (user) => {
+    setSelectedUser(user);
+    setModalOpen(true);
+  };
+
+  const userFields = (user) => [
+    { icon:<Person color="primary"/>, label:'Nombre', value:`${user.nombre} ${user.apellido}` },
+    { icon:<HomeIcon color="secondary"/>, label:'Dirección', value:user.direccion },
+    { icon:<Phone color="success"/>, label:'Teléfono', value:user.telefono },
+    { icon:<PhoneAndroid color="success"/>, label:'Celular', value:user.celular },
+    { icon:<CalendarMonth color="action"/>, label:'Nacimiento', value:user.fecha_nacimiento },
+    { icon:<Email color="error"/>, label:'Email', value:user.email },
+    { icon:<Lock color="warning"/>, label:'Contraseña', value:'••••••••' },
+    { icon:<Person color="info"/>, label:'ID', value:user.id },
+    { icon:<CalendarMonth color="disabled"/>, label:'Fecha de alta', value:user.fecha_alta },
+    { icon:<CalendarMonth color="disabled"/>, label:'Fecha de baja', value:user.fecha_baja },
+    { icon:<Person color="error"/>, label:'Activa', value:user.activa ? 'Sí' : 'No' }
+  ];
 
   return (
     <Container sx={{ mt:4 }}>
       <Typography variant="h4" gutterBottom>Lista de Usuarios</Typography>
-      {loading ? <CircularProgress /> : (
+
+      {loading ? <CircularProgress /> :
         <UsuariosTable
           usuarios={usuarios}
-          onModificar={user => navigate(`/modificar?id=${user.id}`)}
+          onModificar={(user) => navigate(`/modificar?id=${user.id}`)}
           onBaja={handleBaja}
           onVer={handleVer}
         />
-      )}
+      }
 
-      {/* Modal detalles usuario */}
-      <Dialog open={modalOpen} onClose={()=>setModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx:{borderRadius:2,p:2} }}>
+      {/* Modal ver usuario */}
+      <Dialog open={modalOpen} onClose={()=>setModalOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           Detalles del Usuario
           <IconButton onClick={()=>setModalOpen(false)} size="small"><Close /></IconButton>
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            {selectedUser && userFields(selectedUser).map((item,idx)=>(
+            {selectedUser && userFields(selectedUser).map((item, idx)=>(
               <Grid item xs={12} key={idx}>
-                <Box sx={{ display:'flex', alignItems:'center', gap:1, p:1, bgcolor:'#f5f5f5', borderRadius:1 }}>
+                <Box sx={{ display:'flex', alignItems:'center', gap:1 }}>
                   {item.icon}
-                  <Typography variant="subtitle2" sx={{ width:120 }}>{item.label}</Typography>
-                  <Typography variant="body1" sx={{ fontWeight:500 }}>{item.value}</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight:500 }}>{item.label}:</Typography>
+                  <Typography variant="body1">{item.value}</Typography>
                 </Box>
               </Grid>
             ))}
@@ -78,7 +90,7 @@ export default function Home() {
       </Dialog>
 
       {/* Modal confirmar baja */}
-      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{borderRadius:2,p:2} }}>
+      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           Confirmar baja
           <IconButton onClick={()=>setConfirmOpen(false)} size="small"><Close /></IconButton>
@@ -90,7 +102,12 @@ export default function Home() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={()=>setSnackbar(prev=>({...prev, open:false}))} anchorOrigin={{vertical:'top',horizontal:'right'}}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={()=>setSnackbar(prev=>({...prev, open:false}))}
+        anchorOrigin={{ vertical:'top', horizontal:'right' }}
+      >
         <Alert severity={snackbar.type} sx={{ width:'100%' }}>{snackbar.message}</Alert>
       </Snackbar>
     </Container>

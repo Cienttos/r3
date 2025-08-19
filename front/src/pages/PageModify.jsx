@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextField, Button, Box, Typography, Stack, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
-import { useLocation } from 'react-router-dom';
-import { useUsuarios } from '../hooks/useUsuarios';
 import { Close } from '@mui/icons-material';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useUsuarios } from '../hooks/useUsuarios';
 
 export default function ModificarUsuario() {
-  const { buscarUsuario, modificarUsuario } = useUsuarios();
+  const { buscarUsuario, modificarUsuario, eliminarUsuario } = useUsuarios();
   const [form, setForm] = useState({});
   const [snackbar, setSnackbar] = useState({ open:false, type:'', message:'' });
   const [confirmOpen, setConfirmOpen] = useState(false);
-
+  const [eliminarOpen, setEliminarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const id = new URLSearchParams(location.search).get('id');
 
-  useEffect(() => {
-    const cargar = async () => {
+  useEffect(()=>{
+    const cargar = async ()=>{
       const user = await buscarUsuario(id);
       setForm(user);
     };
@@ -24,7 +25,6 @@ export default function ModificarUsuario() {
   const handleChange = e => {
     const { name, value } = e.target;
     let val = value.trimStart();
-    if(name==='nombre' || name==='apellido') val = val.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g,'');
     setForm(prev => ({ ...prev, [name]: val }));
   };
 
@@ -34,37 +34,51 @@ export default function ModificarUsuario() {
   };
 
   const confirmarModificar = async () => {
-    try {
+    try{
       await modificarUsuario(id, form);
       setSnackbar({ open:true, type:'success', message:'Usuario modificado con éxito!' });
     } catch(err){
-      setSnackbar({ open:true, type:'error', message:'Error: '+err.message });
+      setSnackbar({ open:true, type:'error', message:'Error: ' + err.message });
     }
     setConfirmOpen(false);
   };
 
+  const handleEliminar = () => setEliminarOpen(true);
+  const confirmarEliminar = async () => {
+    try {
+      await eliminarUsuario(id);
+      setSnackbar({ open:true, type:'success', message:'Usuario eliminado correctamente' });
+      navigate('/');
+    } catch(err) {
+      setSnackbar({ open:true, type:'error', message:'Error: ' + err.message });
+    }
+    setEliminarOpen(false);
+  };
+
   return (
-    <Box sx={{ maxWidth:600, mx:'auto', mt:4 }}>
-      <Typography variant="h5" gutterBottom>Modificar Usuario</Typography>
+    <Box sx={{ mt:4, maxWidth:600, mx:'auto' }}>
+      <Typography variant="h4" gutterBottom>Modificar Usuario</Typography>
       <form onSubmit={handleSubmit}>
         <Stack spacing={2}>
-          {['nombre','apellido','direccion','telefono','celular','fecha_nacimiento','email','contrasenia'].map(key=>(
+          {Object.keys(form).map(key=>(
             <TextField
               key={key}
-              fullWidth
-              type={key==='fecha_nacimiento' ? 'date' : key==='email' ? 'email' : key==='contrasenia' ? 'password' : 'text'}
-              label={key.replace('_',' ').toUpperCase()}
+              label={key.replace(/_/g,' ')}
               name={key}
               value={form[key] || ''}
               onChange={handleChange}
-              InputLabelProps={key==='fecha_nacimiento' ? {shrink:true} : {}}
+              fullWidth
             />
           ))}
-          <Button variant="contained" color="primary" type="submit">Guardar Cambios</Button>
+          <Stack direction="row" spacing={2}>
+            <Button type="submit" variant="contained" color="primary">Guardar cambios</Button>
+            <Button variant="outlined" color="error" onClick={handleEliminar}>Eliminar Usuario</Button>
+          </Stack>
         </Stack>
       </form>
 
-      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
+      {/* Confirmar modificación */}
+      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           Confirmar modificación
           <IconButton onClick={()=>setConfirmOpen(false)} size="small"><Close /></IconButton>
@@ -72,11 +86,29 @@ export default function ModificarUsuario() {
         <DialogContent>¿Desea guardar los cambios de este usuario?</DialogContent>
         <DialogActions>
           <Button onClick={()=>setConfirmOpen(false)}>Cancelar</Button>
-          <Button color="primary" variant="contained" onClick={confirmarModificar}>Guardar</Button>
+          <Button variant="contained" color="primary" onClick={confirmarModificar}>Confirmar</Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={()=>setSnackbar(prev=>({...prev, open:false}))} anchorOrigin={{vertical:'top', horizontal:'right'}}>
+      {/* Confirmar eliminar */}
+      <Dialog open={eliminarOpen} onClose={()=>setEliminarOpen(false)}>
+        <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          Confirmar eliminación
+          <IconButton onClick={()=>setEliminarOpen(false)} size="small"><Close /></IconButton>
+        </DialogTitle>
+        <DialogContent>¿Desea eliminar este usuario?</DialogContent>
+        <DialogActions>
+          <Button onClick={()=>setEliminarOpen(false)}>Cancelar</Button>
+          <Button variant="contained" color="error" onClick={confirmarEliminar}>Eliminar</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={()=>setSnackbar(prev=>({...prev, open:false}))}
+        anchorOrigin={{ vertical:'top', horizontal:'right' }}
+      >
         <Alert severity={snackbar.type} sx={{ width:'100%' }}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>

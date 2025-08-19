@@ -6,6 +6,7 @@ export function useUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Listar todos los usuarios activos
   const listarUsuarios = async () => {
     setLoading(true);
     try {
@@ -19,6 +20,7 @@ export function useUsuarios() {
     }
   };
 
+  // Listar usuarios dados de baja
   const listarUsuariosBaja = async () => {
     setLoading(true);
     try {
@@ -32,45 +34,90 @@ export function useUsuarios() {
     }
   };
 
-  const obtenerUsuario = async (id) => {
-    const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
-    return await res.json();
+  // Obtener un usuario por id
+  const buscarUsuario = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
+  // Crear un usuario
   const crearUsuario = async (data) => {
-    const res = await fetch(`${API_URL}/usuario/crear`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/crear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   };
 
+  // Dar de alta un usuario
   const altaUsuario = async (id) => {
-    const res = await fetch(`${API_URL}/usuario/alta`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/alta`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   };
 
+  // Modificar usuario
   const modificarUsuario = async (id, data) => {
-    const res = await fetch(`${API_URL}/usuario/modificar`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, data }),
-    });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/modificar`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, data }),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   };
 
+  // Dar de baja un usuario
   const bajaUsuario = async (id) => {
-    const res = await fetch(`${API_URL}/usuario/baja`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/baja`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  // Eliminar un usuario definitivamente
+  const eliminarUsuario = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/usuario/eliminar`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   };
 
   return {
@@ -78,10 +125,11 @@ export function useUsuarios() {
     loading,
     listarUsuarios,
     listarUsuariosBaja,
-    obtenerUsuario,
+    buscarUsuario,
     crearUsuario,
     altaUsuario,
     modificarUsuario,
     bajaUsuario,
+    eliminarUsuario,
   };
 }

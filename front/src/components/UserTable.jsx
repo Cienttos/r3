@@ -3,16 +3,16 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // <-- ícono de tick/correcto
+import CheckIcon from '@mui/icons-material/Check';
 
 export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, modoAlta = false }) {
   if (!usuarios || usuarios.length === 0) return <p>No hay usuarios para mostrar.</p>;
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
+    <TableContainer component={Paper}>
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+          <TableRow>
             <TableCell>Nombre</TableCell>
             <TableCell>Email</TableCell>
             <TableCell>Acciones</TableCell>
@@ -20,33 +20,37 @@ export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, mo
         </TableHead>
         <TableBody>
           {usuarios.map(user => (
-            <TableRow key={user.id} hover>
+            <TableRow key={user.id}>
               <TableCell>{`${user.nombre} ${user.apellido}`}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
-                <Tooltip title="Ver">
-                  <IconButton onClick={() => onVer(user)} sx={{ color: '#1976d2' }}>
-                    <VisibilityIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Modificar">
-                  <IconButton onClick={() => onModificar && onModificar(user)} sx={{ color: '#fbc02d' }}>
-                    <EditIcon />
-                  </IconButton>
-                </Tooltip>
-                {modoAlta ? (
-                  <Tooltip title="Dar de alta">
-                    <IconButton onClick={() => onBaja(user.id)} sx={{ color: '#2e7d32' }}>
-                      <CheckCircleIcon />
-                    </IconButton>
-                  </Tooltip>
-                ) : (
-                  <Tooltip title="Dar de baja">
-                    <IconButton onClick={() => onBaja(user.id)} sx={{ color: '#d32f2f' }}>
-                      <DeleteIcon />
+                {onVer && (
+                  <Tooltip title="Ver">
+                    <IconButton onClick={() => onVer(user)} color="primary">
+                      <VisibilityIcon />
                     </IconButton>
                   </Tooltip>
                 )}
+                {onModificar && (
+                  <Tooltip title="Modificar">
+                    <IconButton onClick={() => onModificar(user)} color="secondary">
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {onBaja && modoAlta ? (
+                  <Tooltip title="Dar de alta">
+                    <IconButton onClick={() => onBaja(user.id)} color="success">
+                      <CheckIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : onBaja ? (
+                  <Tooltip title="Dar de baja">
+                    <IconButton onClick={() => onBaja(user.id)} color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : null}
               </TableCell>
             </TableRow>
           ))}

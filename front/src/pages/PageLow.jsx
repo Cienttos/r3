@@ -11,25 +11,25 @@ export default function UsuariosBaja() {
   const [userToAlta, setUserToAlta] = useState(null);
   const [snackbar, setSnackbar] = useState({ open:false, type:'', message:'' });
 
-  useEffect(() => {
-    const cargarUsuarios = async () => {
+  useEffect(()=>{
+    const cargarUsuarios = async ()=>{
       const data = await listarUsuariosBaja();
       setUsuariosBaja(data);
     };
     cargarUsuarios();
   }, [listarUsuariosBaja]);
 
-  const handleAlta = (id) => {
+  const handleAlta = (id)=>{
     setUserToAlta(id);
     setConfirmOpen(true);
   };
 
-  const confirmarAlta = async () => {
-    try {
+  const confirmarAlta = async ()=>{
+    try{
       await altaUsuario(userToAlta);
-      setUsuariosBaja(prev => prev.filter(u => u.id !== userToAlta));
+      setUsuariosBaja(prev=>prev.filter(u=>u.id!==userToAlta));
       setSnackbar({ open:true, type:'success', message:'Usuario dado de alta correctamente' });
-    } catch (err) {
+    } catch(err){
       setSnackbar({ open:true, type:'error', message:'Error: '+err.message });
     }
     setConfirmOpen(false);
@@ -39,19 +39,12 @@ export default function UsuariosBaja() {
   return (
     <Container sx={{ mt:4 }}>
       <Typography variant="h4" gutterBottom>Usuarios Dados de Baja</Typography>
-
       {loading ? <CircularProgress /> :
-        usuariosBaja.length === 0 ? <Typography>No hay usuarios dados de baja.</Typography> :
-        <UsuariosTable 
-          usuarios={usuariosBaja} 
-          onBaja={handleAlta} 
-          modoAlta={true} // activa el ícono de tick
-          onVer={null} 
-          onModificar={null} 
-        />
+        usuariosBaja.length===0 ? <Typography>No hay usuarios dados de baja.</Typography> :
+        <UsuariosTable usuarios={usuariosBaja} onBaja={handleAlta} modoAlta={true} />
       }
 
-      {/* Modal de confirmación */}
+      {/* Modal confirmación */}
       <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           Confirmar alta
@@ -64,11 +57,11 @@ export default function UsuariosBaja() {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar de notificación */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={()=>setSnackbar(prev => ({...prev, open:false}))}
+        onClose={()=>setSnackbar(prev=>({...prev, open:false}))}
         anchorOrigin={{vertical:'top', horizontal:'right'}}
       >
         <Alert severity={snackbar.type} sx={{ width:'100%' }}>{snackbar.message}</Alert>
