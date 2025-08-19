@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, Grid, Box, IconButton } from '@mui/material';
-import { Person, Email, Home as HomeIcon, Phone, PhoneAndroid, CalendarMonth, Lock, Close } from '@mui/icons-material';
+import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, Grid, Box, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tooltip } from '@mui/material';
+import { Person, Email, Home as HomeIcon, Phone, PhoneAndroid, CalendarMonth, Lock, Close, Edit, Delete, Visibility } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
-import UsuariosTable from '../components/UserTable';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
@@ -17,6 +16,7 @@ export default function Home() {
   useEffect(() => { listarUsuarios(); }, []);
 
   const handleBaja = (id) => { setUserToDelete(id); setConfirmOpen(true); };
+  const handleVer = (user) => { setSelectedUser(user); setModalOpen(true); };
 
   const confirmarBaja = async () => {
     try {
@@ -29,8 +29,6 @@ export default function Home() {
     setConfirmOpen(false);
     setUserToDelete(null);
   };
-
-  const handleVer = (user) => { setSelectedUser(user); setModalOpen(true); };
 
   const userFields = (user) => [
     { icon:<Person color="primary"/>, label:'Nombre', value:`${user.nombre} ${user.apellido}` },
@@ -45,13 +43,40 @@ export default function Home() {
   return (
     <Container sx={{ mt:4 }}>
       <Typography variant="h4" gutterBottom>Lista de Usuarios</Typography>
+
       {loading ? <CircularProgress /> :
-        <UsuariosTable
-          usuarios={usuarios}
-          onModificar={(user)=>navigate(`/modificar?id=${user.id}`)}
-          onBaja={handleBaja}
-          onVer={handleVer}
-        />
+        usuarios.length===0 ? <Typography>No hay usuarios para mostrar.</Typography> :
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nombre</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {usuarios.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell>{`${user.nombre} ${user.apellido}`}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Tooltip title="Ver">
+                      <IconButton onClick={()=>handleVer(user)}><Visibility /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Modificar">
+                      <IconButton onClick={()=>navigate(`/modificar?id=${user.id}`)}><Edit color="primary"/></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Dar de baja">
+                      <IconButton onClick={()=>handleBaja(user.id)}><Delete color="error"/></IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       }
 
       {/* Modal ver detalles */}
