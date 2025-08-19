@@ -1,38 +1,54 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Alert, Stack } from '@mui/material';
+import { TextField, Button, Box, Typography, Stack, Snackbar, Alert } from '@mui/material';
 import { useUsuarios } from '../hooks/useUsuarios';
 
 export default function CrearUsuario() {
-  const { crearUsuario } = useUsuarios(); // <-- usar crearUsuario
+  const { crearUsuario } = useUsuarios();
   const [form, setForm] = useState({
     nombre: '', apellido: '', direccion: '', telefono: '', celular: '', fecha_nacimiento: '', email: '', contrasenia: ''
   });
-  const [alert, setAlert] = useState({ type: '', message: '' });
+  const [snackbar, setSnackbar] = useState({ open: false, type: '', message: '' });
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value.trimStart() });
+  };
+
+  const validarFormulario = () => {
+    const textoValido = (val) => val && !/^\s*$/.test(val) && !/^[0]+$/.test(val);
+    const emailValido = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    if (!textoValido(form.nombre) || !textoValido(form.apellido)) return 'Nombre y apellido no pueden ser vacíos o inválidos';
+    if (!textoValido(form.direccion)) return 'La dirección es obligatoria';
+    if (!textoValido(form.telefono) || !textoValido(form.celular)) return 'Teléfono y celular no pueden ser vacíos o inválidos';
+    if (!form.fecha_nacimiento) return 'Debe ingresar una fecha de nacimiento';
+    if (!emailValido(form.email)) return 'Debe ingresar un email válido';
+    if (form.contrasenia.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+    return null;
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setAlert({ type: '', message: '' });
+    const error = validarFormulario();
+    if (error) {
+      setSnackbar({ open: true, type: 'error', message: error });
+      return;
+    }
     try {
-      const res = await crearUsuario(form); // <-- llamar a crearUsuario
-      if (res && res.id) {
-        setAlert({ type: 'success', message: 'Usuario creado con éxito! ID: ' + res.id });
+      const res = await crearUsuario(form);
+      if (res?.id) {
+        setSnackbar({ open: true, type: 'success', message: 'Usuario creado con éxito! ID: ' + res.id });
         setForm({ nombre: '', apellido: '', direccion: '', telefono: '', celular: '', fecha_nacimiento: '', email: '', contrasenia: '' });
       } else {
-        setAlert({ type: 'error', message: 'No se pudo crear el usuario.' });
+        setSnackbar({ open: true, type: 'error', message: 'No se pudo crear el usuario' });
       }
     } catch (err) {
-      setAlert({ type: 'error', message: 'Error al crear usuario: ' + err.message });
+      setSnackbar({ open: true, type: 'error', message: 'Error al crear usuario: ' + err.message });
     }
   };
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
       <Typography variant="h5" gutterBottom>Crear Usuario</Typography>
-
-      {alert.message && <Alert severity={alert.type} sx={{ mb: 2 }}>{alert.message}</Alert>}
-
       <form onSubmit={handleSubmit}>
         <Stack spacing={2}>
           {['nombre','apellido','direccion','telefono','celular','fecha_nacimiento','email','contrasenia'].map(key => (
@@ -50,6 +66,9 @@ export default function CrearUsuario() {
           <Button variant="contained" type="submit">Crear Usuario</Button>
         </Stack>
       </form>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.type}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useUsuarios } from '../hooks/useUsuarios';
-import { TextField, Button, Box, Typography, Alert, Stack } from '@mui/material';
+import { TextField, Button, Box, Typography, Stack, Snackbar, Alert } from '@mui/material';
 
 export default function ModificarUsuario() {
   const { obtenerUsuario, modificarUsuario } = useUsuarios();
@@ -13,7 +13,7 @@ export default function ModificarUsuario() {
   const [form, setForm] = useState({
     nombre: '', apellido: '', direccion: '', telefono: '', celular: '', fecha_nacimiento: '', email: '', contrasenia: ''
   });
-  const [alert, setAlert] = useState({ type:'', message:'' });
+  const [snackbar, setSnackbar] = useState({ open: false, type: '', message: '' });
 
   useEffect(() => {
     if (id) {
@@ -32,26 +32,39 @@ export default function ModificarUsuario() {
     }
   }, [id]);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value.trimStart() });
+
+  const validarFormulario = () => {
+    const textoValido = (val) => val && !/^\s*$/.test(val) && !/^[0]+$/.test(val);
+    const emailValido = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    if (!textoValido(form.nombre) || !textoValido(form.apellido)) return 'Nombre y apellido no pueden ser inválidos';
+    if (!textoValido(form.direccion)) return 'La dirección es obligatoria';
+    if (!textoValido(form.telefono) || !textoValido(form.celular)) return 'Teléfono y celular no pueden ser inválidos';
+    if (!form.fecha_nacimiento) return 'Debe ingresar una fecha de nacimiento';
+    if (!emailValido(form.email)) return 'Debe ingresar un email válido';
+    if (form.contrasenia.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+    return null;
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setAlert({ type:'', message:'' });
+    const error = validarFormulario();
+    if (error) {
+      setSnackbar({ open: true, type: 'error', message: error });
+      return;
+    }
     try {
       await modificarUsuario(id, form);
-      setAlert({ type:'success', message:'Usuario modificado con éxito!' });
+      setSnackbar({ open: true, type: 'success', message: 'Usuario modificado con éxito!' });
       setTimeout(() => navigate('/'), 1000);
     } catch (err) {
-      setAlert({ type:'error', message:'Error al modificar usuario: ' + err.message });
+      setSnackbar({ open: true, type: 'error', message: 'Error al modificar usuario: ' + err.message });
     }
   };
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
       <Typography variant="h5" gutterBottom>Modificar Usuario</Typography>
-
-      {alert.message && <Alert severity={alert.type} sx={{ mb:2 }}>{alert.message}</Alert>}
-
       <form onSubmit={handleSubmit}>
         <Stack spacing={2}>
           {['nombre','apellido','direccion','telefono','celular','fecha_nacimiento','email','contrasenia'].map(key => (
@@ -69,6 +82,9 @@ export default function ModificarUsuario() {
           <Button variant="contained" type="submit">Guardar Cambios</Button>
         </Stack>
       </form>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.type}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }
