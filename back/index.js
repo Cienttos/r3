@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { obtenerUsuario, altaUsuario, bajaUsuario, modificarUsuario, listarUsuarios, eliminarUsuario, crearUsuario } from './controller.js'; 
+import { obtenerUsuario, altaUsuario, bajaUsuario, modificarUsuario, listarUsuarios, eliminarUsuario, crearUsuario, listarUsuariosBaja } from './controller.js'; 
 
 const app = express();
 app.use(express.json());
@@ -102,6 +102,16 @@ app.delete("/usuario/eliminar", async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar usuario' });
     }
 });
+
+app.get("/usuario/lista-baja", async (req, res) => {
+    try {
+        const usuarios = await listarUsuariosBaja();
+        res.status(200).json(usuarios);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al listar usuarios dados de baja' });
+    }
+});
+
 
 app.listen(3000, async () => {
   console.log('Servidor corriendo en http://localhost:3000');

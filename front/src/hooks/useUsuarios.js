@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const API_URL = 'http://localhost:3000';
 
@@ -10,77 +10,76 @@ export function useUsuarios() {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/usuario/lista`);
-      if (!res.ok) throw new Error('Error al listar usuarios');
       const data = await res.json();
       setUsuarios(data);
     } catch (err) {
-      console.error(err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const listarUsuariosBaja = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/usuario/lista-baja`);
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
   const obtenerUsuario = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
-      if (!res.ok) throw new Error('Usuario no encontrado');
-      return await res.json();
-    } catch (err) {
-      console.error(err.message);
-      return null;
-    }
+    const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
+    return await res.json();
+  };
+
+  const crearUsuario = async (data) => {
+    const res = await fetch(`${API_URL}/usuario/crear`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return await res.json();
   };
 
   const altaUsuario = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/usuario/alta`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      if (!res.ok) throw new Error('Error al dar de alta usuario');
-      return await res.json();
-    } catch (err) {
-      console.error(err.message);
-      return null;
-    }
+    const res = await fetch(`${API_URL}/usuario/alta`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    return await res.json();
   };
 
   const modificarUsuario = async (id, data) => {
-    try {
-      const res = await fetch(`${API_URL}/usuario/modificar`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, data }),
-      });
-      if (!res.ok) throw new Error('Error al modificar usuario');
-      return await res.json();
-    } catch (err) {
-      console.error(err.message);
-      return null;
-    }
+    const res = await fetch(`${API_URL}/usuario/modificar`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, data }),
+    });
+    return await res.json();
   };
 
   const bajaUsuario = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/usuario/baja`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      if (!res.ok) throw new Error('Error al dar de baja usuario');
-      return await res.json();
-    } catch (err) {
-      console.error(err.message);
-      return null;
-    }
+    const res = await fetch(`${API_URL}/usuario/baja`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    return await res.json();
   };
 
   return {
     usuarios,
     loading,
     listarUsuarios,
+    listarUsuariosBaja,
     obtenerUsuario,
+    crearUsuario,
     altaUsuario,
     modificarUsuario,
     bajaUsuario,
