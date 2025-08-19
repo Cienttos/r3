@@ -13,7 +13,7 @@ import {
   Grid,
   Box
 } from '@mui/material';
-import { Person, Email, Home, PhoneAndroid, Phone, CalendarMonth, Lock } from '@mui/icons-material';
+import { Person, Email, Home as HomeIcon, PhoneAndroid, Phone, CalendarMonth, Lock } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
 import UsuariosTable from '../components/UserTable';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +27,9 @@ export default function Home() {
   const [snackbar, setSnackbar] = useState({ open: false, type: '', message: '' });
   const navigate = useNavigate();
 
-  useEffect(() => { listarUsuarios(); }, []);
+  useEffect(() => {
+    listarUsuarios();
+  }, []);
 
   const handleBaja = (id) => {
     setUserToDelete(id);
@@ -53,7 +55,7 @@ export default function Home() {
 
   const userFields = (user) => [
     { icon: <Person color="primary" />, label: 'Nombre', value: `${user.nombre} ${user.apellido}` },
-    { icon: <Home color="secondary" />, label: 'Dirección', value: user.direccion },
+    { icon: <HomeIcon color="secondary" />, label: 'Dirección', value: user.direccion },
     { icon: <Phone color="success" />, label: 'Teléfono', value: user.telefono },
     { icon: <PhoneAndroid color="success" />, label: 'Celular', value: user.celular },
     { icon: <CalendarMonth color="action" />, label: 'Nacimiento', value: user.fecha_nacimiento },
@@ -76,6 +78,7 @@ export default function Home() {
         />
       )}
 
+      {/* Modal de ver usuario */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Detalles del Usuario</DialogTitle>
         <DialogContent dividers>
@@ -96,6 +99,7 @@ export default function Home() {
         </DialogActions>
       </Dialog>
 
+      {/* Modal de confirmar baja */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Confirmar baja</DialogTitle>
         <DialogContent>¿Desea dar de baja a este usuario?</DialogContent>
@@ -105,6 +109,7 @@ export default function Home() {
         </DialogActions>
       </Dialog>
 
+      {/* Snackbar de notificaciones */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
