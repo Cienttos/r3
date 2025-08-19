@@ -11,11 +11,18 @@ export default function CrearUsuario() {
 
   const handleChange = e => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value.trimStart() });
+    let newValue = value.trimStart();
+
+    // Solo letras y espacios en nombre y apellido
+    if ((name === 'nombre' || name === 'apellido') && /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/.test(newValue)) {
+      return;
+    }
+
+    setForm({ ...form, [name]: newValue });
   };
 
   const validarFormulario = () => {
-    const textoValido = (val) => val && !/^\s*$/.test(val) && !/^[0]+$/.test(val);
+    const textoValido = (val) => val && !/^\s*$/.test(val);
     const emailValido = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
     if (!textoValido(form.nombre) || !textoValido(form.apellido)) return 'Nombre y apellido no pueden ser vacíos o inválidos';
     if (!textoValido(form.direccion)) return 'La dirección es obligatoria';

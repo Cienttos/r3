@@ -32,10 +32,19 @@ export default function ModificarUsuario() {
     }
   }, [id]);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value.trimStart() });
+  const handleChange = e => {
+    const { name, value } = e.target;
+    let newValue = value.trimStart();
+
+    if ((name === 'nombre' || name === 'apellido') && /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/.test(newValue)) {
+      return;
+    }
+
+    setForm({ ...form, [name]: newValue });
+  };
 
   const validarFormulario = () => {
-    const textoValido = (val) => val && !/^\s*$/.test(val) && !/^[0]+$/.test(val);
+    const textoValido = (val) => val && !/^\s*$/.test(val);
     const emailValido = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
     if (!textoValido(form.nombre) || !textoValido(form.apellido)) return 'Nombre y apellido no pueden ser inválidos';
     if (!textoValido(form.direccion)) return 'La dirección es obligatoria';

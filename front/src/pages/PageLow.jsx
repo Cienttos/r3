@@ -9,6 +9,8 @@ export default function UsuariosBaja() {
   const [usuariosBaja, setUsuariosBaja] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [userToAlta, setUserToAlta] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, type: '', message: '' });
   const navigate = useNavigate();
 
@@ -16,14 +18,21 @@ export default function UsuariosBaja() {
     listarUsuariosBaja().then(setUsuariosBaja);
   }, []);
 
-  const handleAlta = async (id) => {
-    if (!window.confirm('¿Desea dar de alta a este usuario?')) return;
+  const handleAltaRequest = (user) => {
+    setUserToAlta(user);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmAlta = async () => {
     try {
-      await altaUsuario(id);
-      setUsuariosBaja(prev => prev.filter(u => u.id !== id));
+      await altaUsuario(userToAlta.id);
+      setUsuariosBaja(prev => prev.filter(u => u.id !== userToAlta.id));
       setSnackbar({ open: true, type: 'success', message: 'Usuario dado de alta correctamente' });
     } catch (err) {
       setSnackbar({ open: true, type: 'error', message: 'Error al dar de alta: ' + err.message });
+    } finally {
+      setConfirmOpen(false);
+      setUserToAlta(null);
     }
   };
 
@@ -43,11 +52,13 @@ export default function UsuariosBaja() {
         <UsuariosTable
           usuarios={usuariosBaja}
           onModificar={(user) => navigate(`/modificar?id=${user.id}`)}
-          onBaja={handleAlta}
+          onBaja={handleAltaRequest}
           onVer={handleVer}
           modoAlta={true}
         />
       )}
+
+      {/* Modal de detalles */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
         <DialogTitle>Detalles del Usuario</DialogTitle>
         <DialogContent>
@@ -59,6 +70,19 @@ export default function UsuariosBaja() {
           <Button onClick={() => setModalOpen(false)}>Cerrar</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de confirmación */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirmar alta</DialogTitle>
+        <DialogContent>
+          ¿Desea dar de alta al usuario {userToAlta?.nombre} {userToAlta?.apellido}?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancelar</Button>
+          <Button variant="contained" color="primary" onClick={handleConfirmAlta}>Confirmar</Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
         <Alert severity={snackbar.type}>{snackbar.message}</Alert>
       </Snackbar>
