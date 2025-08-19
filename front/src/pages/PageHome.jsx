@@ -42,10 +42,10 @@ export default function Home() {
 
   return (
     <Container sx={{ mt:4 }}>
-      <Typography variant="h4" gutterBottom>Lista de Usuarios</Typography>
+      <Typography variant="h4" gutterBottom>Usuarios Activos</Typography>
 
       {loading ? <CircularProgress /> :
-        usuarios.length===0 ? <Typography>No hay usuarios para mostrar.</Typography> :
+        usuarios.length===0 ? <Typography>No hay usuarios activos.</Typography> :
 
         <TableContainer component={Paper}>
           <Table>

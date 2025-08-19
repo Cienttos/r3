@@ -1,54 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tooltip } from '@mui/material';
 import { Check, Delete, Close, Visibility } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
 
 export default function UsuariosBaja() {
   const { listarUsuariosBaja, altaUsuario, eliminarUsuario, loading } = useUsuarios();
   const [usuariosBaja, setUsuariosBaja] = useState([]);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [userToAction, setUserToAction] = useState(null);
-  const [actionType, setActionType] = useState(''); // 'alta' o 'eliminar'
   const [snackbar, setSnackbar] = useState({ open:false, type:'', message:'' });
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
-  useEffect(()=>{
-    const cargarUsuarios = async ()=>{
+  useEffect(() => {
+    (async () => {
       const data = await listarUsuariosBaja();
       setUsuariosBaja(data);
-    };
-    cargarUsuarios();
-  }, [listarUsuariosBaja]);
+    })();
+  }, []);
 
-  const handleAction = (id, type) => {
-    setUserToAction(id);
-    setActionType(type);
-    setConfirmOpen(true);
+  const handleAlta = async (id) => {
+    try {
+      await altaUsuario(id);
+      const data = await listarUsuariosBaja();
+      setUsuariosBaja(data);
+      setSnackbar({ open:true, type:'success', message:'Usuario dado de alta correctamente' });
+    } catch (err) {
+      setSnackbar({ open:true, type:'error', message:'Error al dar de alta: '+err.message });
+    }
   };
 
-  const confirmarAction = async () => {
-    try{
-      if(actionType === 'alta') {
-        await altaUsuario(userToAction);
-        setUsuariosBaja(prev => prev.filter(u => u.id !== userToAction));
-        setSnackbar({ open:true, type:'success', message:'Usuario dado de alta correctamente' });
-      } else if(actionType === 'eliminar') {
-        await eliminarUsuario(userToAction);
-        setUsuariosBaja(prev => prev.filter(u => u.id !== userToAction));
-        setSnackbar({ open:true, type:'success', message:'Usuario eliminado correctamente' });
-      }
-    } catch(err){
-      setSnackbar({ open:true, type:'error', message:'Error: '+err.message });
+  const handleEliminar = (id) => { setUserToDelete(id); setConfirmDeleteOpen(true); };
+  const confirmarEliminar = async () => {
+    try {
+      await eliminarUsuario(userToDelete);
+      const data = await listarUsuariosBaja();
+      setUsuariosBaja(data);
+      setSnackbar({ open:true, type:'success', message:'Usuario eliminado correctamente' });
+    } catch (err) {
+      setSnackbar({ open:true, type:'error', message:'Error al eliminar: '+err.message });
     }
-    setConfirmOpen(false);
-    setUserToAction(null);
-    setActionType('');
+    setConfirmDeleteOpen(false);
+    setUserToDelete(null);
   };
 
   return (
     <Container sx={{ mt:4 }}>
       <Typography variant="h4" gutterBottom>Usuarios Dados de Baja</Typography>
+
       {loading ? <CircularProgress /> :
-        usuariosBaja.length === 0 ? <Typography>No hay usuarios dados de baja.</Typography> :
+        usuariosBaja.length===0 ? <Typography>No hay usuarios dados de baja.</Typography> :
+
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -65,14 +65,13 @@ export default function UsuariosBaja() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Tooltip title="Dar de alta">
-                      <IconButton color="success" onClick={()=>handleAction(user.id,'alta')}>
-                        <Check />
-                      </IconButton>
+                      <IconButton onClick={()=>handleAlta(user.id)}><Check color="success"/></IconButton>
                     </Tooltip>
-                    <Tooltip title="Eliminar definitivamente">
-                      <IconButton color="error" onClick={()=>handleAction(user.id,'eliminar')}>
-                        <Delete />
-                      </IconButton>
+                    <Tooltip title="Eliminar">
+                      <IconButton onClick={()=>handleEliminar(user.id)}><Delete color="error"/></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Ver">
+                      <IconButton><Visibility /></IconButton>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
@@ -82,24 +81,20 @@ export default function UsuariosBaja() {
         </TableContainer>
       }
 
-      {/* Modal confirmar acción */}
-      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
+      {/* Modal confirmar eliminar */}
+      <Dialog open={confirmDeleteOpen} onClose={()=>setConfirmDeleteOpen(false)}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          Confirmar {actionType==='alta' ? 'alta' : 'eliminación'}
-          <IconButton onClick={()=>setConfirmOpen(false)} size="small"><Close /></IconButton>
+          Confirmar eliminación
+          <IconButton size="small" onClick={()=>setConfirmDeleteOpen(false)}><Close /></IconButton>
         </DialogTitle>
-        <DialogContent>
-          {actionType==='alta' ? '¿Desea dar de alta a este usuario?' : '¿Desea eliminar definitivamente a este usuario?'}
-        </DialogContent>
+        <DialogContent>¿Desea eliminar definitivamente este usuario?</DialogContent>
         <DialogActions>
-          <Button onClick={()=>setConfirmOpen(false)}>Cancelar</Button>
-          <Button color={actionType==='alta' ? "success" : "error"} variant="contained" onClick={confirmarAction}>
-            {actionType==='alta' ? 'Dar de Alta' : 'Eliminar'}
-          </Button>
+          <Button onClick={()=>setConfirmDeleteOpen(false)}>Cancelar</Button>
+          <Button color="error" variant="contained" onClick={confirmarEliminar}>Eliminar</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar centrado abajo */}
+      {/* Snackbar abajo centro */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

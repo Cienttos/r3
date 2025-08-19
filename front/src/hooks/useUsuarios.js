@@ -100,10 +100,9 @@ export function useUsuarios() {
 
   const eliminarUsuario = async (id) => {
     try {
-      const res = await fetch(`${API_URL}/usuario/eliminar`, {
+      const res = await fetch(`${API_URL}/usuario/eliminar?id=${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
       });
       return await res.json();
     } catch (err) {
