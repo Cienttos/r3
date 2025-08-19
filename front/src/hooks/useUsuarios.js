@@ -6,7 +6,6 @@ export function useUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Listar todos los usuarios activos
   const listarUsuarios = async () => {
     setLoading(true);
     try {
@@ -20,7 +19,6 @@ export function useUsuarios() {
     }
   };
 
-  // Listar usuarios dados de baja
   const listarUsuariosBaja = async () => {
     setLoading(true);
     try {
@@ -34,7 +32,6 @@ export function useUsuarios() {
     }
   };
 
-  // Obtener un usuario por id
   const buscarUsuario = async (id) => {
     try {
       const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
@@ -45,7 +42,6 @@ export function useUsuarios() {
     }
   };
 
-  // Crear un usuario
   const crearUsuario = async (data) => {
     try {
       const res = await fetch(`${API_URL}/usuario/crear`, {
@@ -60,7 +56,6 @@ export function useUsuarios() {
     }
   };
 
-  // Dar de alta un usuario
   const altaUsuario = async (id) => {
     try {
       const res = await fetch(`${API_URL}/usuario/alta`, {
@@ -75,7 +70,6 @@ export function useUsuarios() {
     }
   };
 
-  // Modificar usuario
   const modificarUsuario = async (id, data) => {
     try {
       const res = await fetch(`${API_URL}/usuario/modificar`, {
@@ -90,7 +84,6 @@ export function useUsuarios() {
     }
   };
 
-  // Dar de baja un usuario
   const bajaUsuario = async (id) => {
     try {
       const res = await fetch(`${API_URL}/usuario/baja`, {
@@ -105,7 +98,6 @@ export function useUsuarios() {
     }
   };
 
-  // Eliminar un usuario definitivamente
   const eliminarUsuario = async (id) => {
     try {
       const res = await fetch(`${API_URL}/usuario/eliminar`, {

@@ -24,13 +24,11 @@ export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, mo
               <TableCell>{`${user.nombre} ${user.apellido}`}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
-                {onVer && (
-                  <Tooltip title="Ver">
-                    <IconButton onClick={() => onVer(user)} color="primary">
-                      <VisibilityIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
+                <Tooltip title="Ver detalles">
+                  <IconButton onClick={() => onVer(user)} color="primary">
+                    <VisibilityIcon />
+                  </IconButton>
+                </Tooltip>
                 {onModificar && (
                   <Tooltip title="Modificar">
                     <IconButton onClick={() => onModificar(user)} color="secondary">
@@ -38,19 +36,11 @@ export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, mo
                     </IconButton>
                   </Tooltip>
                 )}
-                {onBaja && modoAlta ? (
-                  <Tooltip title="Dar de alta">
-                    <IconButton onClick={() => onBaja(user.id)} color="success">
-                      <CheckIcon />
-                    </IconButton>
-                  </Tooltip>
-                ) : onBaja ? (
-                  <Tooltip title="Dar de baja">
-                    <IconButton onClick={() => onBaja(user.id)} color="error">
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                ) : null}
+                <Tooltip title={modoAlta ? "Dar de alta" : "Dar de baja"}>
+                  <IconButton onClick={() => onBaja(user.id)} color={modoAlta ? "success" : "error"}>
+                    {modoAlta ? <CheckIcon /> : <DeleteIcon />}
+                  </IconButton>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

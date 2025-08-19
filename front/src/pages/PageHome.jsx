@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, Grid, Box, IconButton } from '@mui/material';
-import { Person, Email, Home as HomeIcon, PhoneAndroid, Phone, CalendarMonth, Lock, Close } from '@mui/icons-material';
+import { Person, Email, Home as HomeIcon, Phone, PhoneAndroid, CalendarMonth, Lock, Close } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
 import UsuariosTable from '../components/UserTable';
 import { useNavigate } from 'react-router-dom';
@@ -16,27 +16,21 @@ export default function Home() {
 
   useEffect(() => { listarUsuarios(); }, []);
 
-  const handleBaja = (id) => {
-    setUserToDelete(id);
-    setConfirmOpen(true);
-  };
+  const handleBaja = (id) => { setUserToDelete(id); setConfirmOpen(true); };
 
   const confirmarBaja = async () => {
     try {
       await bajaUsuario(userToDelete);
       await listarUsuarios();
       setSnackbar({ open:true, type:'success', message:'Usuario dado de baja correctamente' });
-    } catch (err) {
-      setSnackbar({ open:true, type:'error', message:'Error al dar de baja: ' + err.message });
+    } catch(err){
+      setSnackbar({ open:true, type:'error', message:'Error al dar de baja: '+err.message });
     }
     setConfirmOpen(false);
     setUserToDelete(null);
   };
 
-  const handleVer = (user) => {
-    setSelectedUser(user);
-    setModalOpen(true);
-  };
+  const handleVer = (user) => { setSelectedUser(user); setModalOpen(true); };
 
   const userFields = (user) => [
     { icon:<Person color="primary"/>, label:'Nombre', value:`${user.nombre} ${user.apellido}` },
@@ -45,31 +39,26 @@ export default function Home() {
     { icon:<PhoneAndroid color="success"/>, label:'Celular', value:user.celular },
     { icon:<CalendarMonth color="action"/>, label:'Nacimiento', value:user.fecha_nacimiento },
     { icon:<Email color="error"/>, label:'Email', value:user.email },
-    { icon:<Lock color="warning"/>, label:'Contraseña', value:'••••••••' },
-    { icon:<Person color="info"/>, label:'ID', value:user.id },
-    { icon:<CalendarMonth color="disabled"/>, label:'Fecha de alta', value:user.fecha_alta },
-    { icon:<CalendarMonth color="disabled"/>, label:'Fecha de baja', value:user.fecha_baja },
-    { icon:<Person color="error"/>, label:'Activa', value:user.activa ? 'Sí' : 'No' }
+    { icon:<Lock color="warning"/>, label:'Contraseña', value:'••••••••' }
   ];
 
   return (
     <Container sx={{ mt:4 }}>
       <Typography variant="h4" gutterBottom>Lista de Usuarios</Typography>
-
       {loading ? <CircularProgress /> :
         <UsuariosTable
           usuarios={usuarios}
-          onModificar={(user) => navigate(`/modificar?id=${user.id}`)}
+          onModificar={(user)=>navigate(`/modificar?id=${user.id}`)}
           onBaja={handleBaja}
           onVer={handleVer}
         />
       }
 
-      {/* Modal ver usuario */}
-      <Dialog open={modalOpen} onClose={()=>setModalOpen(false)} fullWidth maxWidth="sm">
+      {/* Modal ver detalles */}
+      <Dialog open={modalOpen} onClose={()=>setModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           Detalles del Usuario
-          <IconButton onClick={()=>setModalOpen(false)} size="small"><Close /></IconButton>
+          <IconButton size="small" onClick={()=>setModalOpen(false)}><Close /></IconButton>
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
@@ -84,16 +73,13 @@ export default function Home() {
             ))}
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={()=>setModalOpen(false)}>Cerrar</Button>
-        </DialogActions>
       </Dialog>
 
       {/* Modal confirmar baja */}
       <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           Confirmar baja
-          <IconButton onClick={()=>setConfirmOpen(false)} size="small"><Close /></IconButton>
+          <IconButton size="small" onClick={()=>setConfirmOpen(false)}><Close /></IconButton>
         </DialogTitle>
         <DialogContent>¿Desea dar de baja a este usuario?</DialogContent>
         <DialogActions>
@@ -102,11 +88,12 @@ export default function Home() {
         </DialogActions>
       </Dialog>
 
+      {/* Snackbar abajo centro */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={()=>setSnackbar(prev=>({...prev, open:false}))}
-        anchorOrigin={{ vertical:'top', horizontal:'right' }}
+        anchorOrigin={{ vertical:'bottom', horizontal:'center' }}
       >
         <Alert severity={snackbar.type} sx={{ width:'100%' }}>{snackbar.message}</Alert>
       </Snackbar>
