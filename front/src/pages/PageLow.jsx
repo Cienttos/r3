@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tooltip } from '@mui/material';
-import { Check, Delete, Close, Visibility } from '@mui/icons-material';
+import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tooltip, Grid, Box } from '@mui/material';
+import { Check, Close, Visibility, Edit } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
+import { useNavigate } from 'react-router-dom';
 
 export default function UsuariosBaja() {
-  const { listarUsuariosBaja, altaUsuario, eliminarUsuario, loading } = useUsuarios();
+  const { listarUsuariosBaja, altaUsuario, loading } = useUsuarios();
   const [usuariosBaja, setUsuariosBaja] = useState([]);
   const [snackbar, setSnackbar] = useState({ open:false, type:'', message:'' });
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -28,19 +30,20 @@ export default function UsuariosBaja() {
     }
   };
 
-  const handleEliminar = (id) => { setUserToDelete(id); setConfirmDeleteOpen(true); };
-  const confirmarEliminar = async () => {
-    try {
-      await eliminarUsuario(userToDelete);
-      const data = await listarUsuariosBaja();
-      setUsuariosBaja(data);
-      setSnackbar({ open:true, type:'success', message:'Usuario eliminado correctamente' });
-    } catch (err) {
-      setSnackbar({ open:true, type:'error', message:'Error al eliminar: '+err.message });
-    }
-    setConfirmDeleteOpen(false);
-    setUserToDelete(null);
+  const handleVer = (user) => {
+    setSelectedUser(user);
+    setModalOpen(true);
   };
+
+  const userFields = (user) => [
+    { label:'Nombre', value:`${user.nombre} ${user.apellido}` },
+    { label:'Dirección', value:user.direccion },
+    { label:'Teléfono', value:user.telefono },
+    { label:'Celular', value:user.celular },
+    { label:'Fecha Nacimiento', value:user.fecha_nacimiento },
+    { label:'Email', value:user.email },
+    { label:'Contraseña', value:'••••••••' },
+  ];
 
   return (
     <Container sx={{ mt:4 }}>
@@ -64,14 +67,14 @@ export default function UsuariosBaja() {
                   <TableCell>{`${user.nombre} ${user.apellido}`}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Tooltip title="Dar de alta">
-                      <IconButton onClick={()=>handleAlta(user.id)}><Check color="success"/></IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton onClick={()=>handleEliminar(user.id)}><Delete color="error"/></IconButton>
-                    </Tooltip>
                     <Tooltip title="Ver">
-                      <IconButton><Visibility /></IconButton>
+                      <IconButton onClick={()=>handleVer(user)}><Visibility /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Modificar">
+                      <IconButton onClick={()=>navigate(`/modificar?id=${user.id}`)}><Edit color="primary" /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Dar de alta">
+                      <IconButton onClick={()=>handleAlta(user.id)}><Check color="success" /></IconButton>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
@@ -81,17 +84,24 @@ export default function UsuariosBaja() {
         </TableContainer>
       }
 
-      {/* Modal confirmar eliminar */}
-      <Dialog open={confirmDeleteOpen} onClose={()=>setConfirmDeleteOpen(false)}>
+      {/* Modal Ver Usuario */}
+      <Dialog open={modalOpen} onClose={()=>setModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx:{ borderRadius:2,p:2 } }}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          Confirmar eliminación
-          <IconButton size="small" onClick={()=>setConfirmDeleteOpen(false)}><Close /></IconButton>
+          Detalles del Usuario
+          <IconButton size="small" onClick={()=>setModalOpen(false)}><Close /></IconButton>
         </DialogTitle>
-        <DialogContent>¿Desea eliminar definitivamente este usuario?</DialogContent>
-        <DialogActions>
-          <Button onClick={()=>setConfirmDeleteOpen(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmarEliminar}>Eliminar</Button>
-        </DialogActions>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            {selectedUser && userFields(selectedUser).map((item, idx)=>(
+              <Grid item xs={12} key={idx}>
+                <Box sx={{ display:'flex', gap:1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight:500 }}>{item.label}:</Typography>
+                  <Typography variant="body1">{item.value}</Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
       </Dialog>
 
       {/* Snackbar abajo centro */}
