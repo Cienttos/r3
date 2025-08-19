@@ -9,10 +9,10 @@ export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, mo
   if (!usuarios || usuarios.length === 0) return <p>No hay usuarios para mostrar.</p>;
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
+    <TableContainer component={Paper}>
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+          <TableRow>
             <TableCell>Nombre</TableCell>
             <TableCell>Email</TableCell>
             <TableCell>Acciones</TableCell>
@@ -20,29 +20,29 @@ export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, mo
         </TableHead>
         <TableBody>
           {usuarios.map(user => (
-            <TableRow key={user.id} hover>
+            <TableRow key={user.id}>
               <TableCell>{`${user.nombre} ${user.apellido}`}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
                 <Tooltip title="Ver">
-                  <IconButton onClick={() => onVer(user)} sx={{ color: '#1976d2' }}>
+                  <IconButton onClick={() => onVer(user)}>
                     <VisibilityIcon />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Modificar">
-                  <IconButton onClick={() => onModificar(user)} sx={{ color: '#fbc02d' }}>
+                  <IconButton onClick={() => onModificar(user)}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
                 {modoAlta ? (
                   <Tooltip title="Dar de alta">
-                    <IconButton onClick={() => onBaja(user.id)} sx={{ color: '#2e7d32' }}>
+                    <IconButton onClick={() => onBaja(user.id)} color="success">
                       <CheckIcon />
                     </IconButton>
                   </Tooltip>
                 ) : (
                   <Tooltip title="Dar de baja">
-                    <IconButton onClick={() => onBaja(user.id)} sx={{ color: '#d32f2f' }}>
+                    <IconButton onClick={() => onBaja(user.id)}>
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
