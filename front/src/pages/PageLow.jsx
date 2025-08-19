@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, CircularProgress } from '@mui/material';
+import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { useUsuarios } from '../hooks/useUsuarios';
 import UsuariosTable from '../components/UserTable';
+import { useNavigate } from 'react-router-dom';
 
 export default function UsuariosBaja() {
   const { listarUsuariosBaja, altaUsuario, loading } = useUsuarios();
   const [usuariosBaja, setUsuariosBaja] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarUsuarios = async () => {
@@ -21,6 +25,11 @@ export default function UsuariosBaja() {
     setUsuariosBaja(prev => prev.filter(u => u.id !== id));
   };
 
+  const handleVer = (user) => {
+    setSelectedUser(user);
+    setModalOpen(true);
+  };
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>Usuarios Dados de Baja</Typography>
@@ -32,10 +41,24 @@ export default function UsuariosBaja() {
       ) : (
         <UsuariosTable
           usuarios={usuariosBaja}
-          onBaja={handleAlta}
-          showModificar={false}
+          onModificar={(user) => navigate(`/modificar?id=${user.id}`)}
+          onBaja={handleAlta}        // aquí funciona como "dar de alta"
+          onVer={handleVer}
+          modoAlta={true}            // habilita tick verde en lugar de tacho
         />
       )}
+
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+        <DialogTitle>Detalles del Usuario</DialogTitle>
+        <DialogContent>
+          {selectedUser && Object.entries(selectedUser).map(([key, value]) => (
+            <Typography key={key}><strong>{key}:</strong> {value}</Typography>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalOpen(false)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

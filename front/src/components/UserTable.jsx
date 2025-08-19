@@ -1,50 +1,51 @@
 import React from 'react';
-import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, IconButton, Button
-} from '@mui/material';
-import { Check } from '@mui/icons-material'; // Importamos el tick
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
 
-export default function UsuariosTable({ usuarios, onBaja, onModificar, showModificar = true }) {
+export default function UsuariosTable({ usuarios, onModificar, onBaja, onVer, modoAlta = false }) {
+  if (!usuarios || usuarios.length === 0) return <p>No hay usuarios para mostrar.</p>;
+
   return (
     <TableContainer component={Paper}>
       <Table>
         <TableHead>
           <TableRow>
             <TableCell>Nombre</TableCell>
-            <TableCell>Apellido</TableCell>
             <TableCell>Email</TableCell>
-            <TableCell>Teléfono</TableCell>
-            <TableCell align="right">Acciones</TableCell>
+            <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {usuarios.map((u) => (
-            <TableRow key={u.id}>
-              <TableCell>{u.nombre}</TableCell>
-              <TableCell>{u.apellido}</TableCell>
-              <TableCell>{u.email}</TableCell>
-              <TableCell>{u.telefono}</TableCell>
-              <TableCell align="right">
-                {showModificar && (
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => onModificar(u.id)}
-                    sx={{ mr: 1 }}
-                  >
-                    Modificar
-                  </Button>
-                )}
-                {onBaja && (
-                  <Button
-                    variant="contained"
-                    color="success"
-                    startIcon={<Check />}
-                    onClick={() => onBaja(u.id)}
-                  >
-                    Dar de alta
-                  </Button>
+          {usuarios.map(user => (
+            <TableRow key={user.id}>
+              <TableCell>{`${user.nombre} ${user.apellido}`}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>
+                <Tooltip title="Ver">
+                  <IconButton onClick={() => onVer(user)}>
+                    <VisibilityIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Modificar">
+                  <IconButton onClick={() => onModificar(user)}>
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                {modoAlta ? (
+                  <Tooltip title="Dar de alta">
+                    <IconButton onClick={() => onBaja(user.id)} color="success">
+                      <CheckIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Dar de baja">
+                    <IconButton onClick={() => onBaja(user.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 )}
               </TableCell>
             </TableRow>
