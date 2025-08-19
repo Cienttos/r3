@@ -18,8 +18,7 @@ export async function obtenerUsuario(id) {
     }
 }
 
-// Dar de alta un usuario, evitando duplicados por email
-export async function altaUsuario(data) {
+export async function crearUsuario(data) {
     let connection;
     try {
         const { nombre, apellido, direccion, telefono, celular, fecha_nacimiento, email, contrasenia } = data;
@@ -27,7 +26,7 @@ export async function altaUsuario(data) {
 
         connection = await connectToDatabase();
 
-        // Verificar si el email ya existe
+        // Verificar si ya existe un usuario con ese email
         const [existing] = await connection.execute(
             'SELECT id FROM usuarios WHERE email = ?',
             [email]
@@ -45,8 +44,30 @@ export async function altaUsuario(data) {
 
         return result.insertId;
     } catch (error) {
-        console.error('Error al dar de alta usuario:', error.message);
+        console.error('Error al crear usuario:', error.message);
         throw error;
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+export async function altaUsuario(id) {
+    let connection;
+    try {
+        const fecha_alta = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+        connection = await connectToDatabase();
+        const [result] = await connection.execute(
+            `UPDATE usuarios 
+            SET activa = 1, fecha_alta = ?, fecha_baja = NULL
+            WHERE id = ?`,
+            [fecha_alta, id]
+        );
+
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error('Error al dar de alta usuario:', error.message);
+        throw new Error('No se pudo dar de alta al usuario');
     } finally {
         if (connection) await connection.end();
     }
@@ -159,3 +180,4 @@ export async function listarUsuariosBaja() {
         if (connection) await connection.end();
     }
 }
+

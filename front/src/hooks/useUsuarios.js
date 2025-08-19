@@ -10,41 +10,70 @@ export function useUsuarios() {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/usuario/lista`);
+      if (!res.ok) throw new Error('Error al listar usuarios');
       const data = await res.json();
       setUsuarios(data);
     } catch (err) {
-      console.error(err);
+      console.error(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const obtenerUsuario = async (id) => {
-    const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/obtener?id=${id}`);
+      if (!res.ok) throw new Error('Usuario no encontrado');
+      return await res.json();
+    } catch (err) {
+      console.error(err.message);
+      return null;
+    }
   };
 
-  const altaUsuario = async (data) => {
-    const res = await fetch(`${API_URL}/usuario/alta`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return await res.json();
+  const altaUsuario = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/usuario/alta`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error('Error al dar de alta usuario');
+      return await res.json();
+    } catch (err) {
+      console.error(err.message);
+      return null;
+    }
   };
 
   const modificarUsuario = async (id, data) => {
-    const res = await fetch(`${API_URL}/usuario/modificar`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, data }),
-    });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/modificar`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, data }),
+      });
+      if (!res.ok) throw new Error('Error al modificar usuario');
+      return await res.json();
+    } catch (err) {
+      console.error(err.message);
+      return null;
+    }
   };
 
   const bajaUsuario = async (id) => {
-    const res = await fetch(`${API_URL}/usuario/baja?id=${id}`, { method: 'PATCH' });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/usuario/baja`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error('Error al dar de baja usuario');
+      return await res.json();
+    } catch (err) {
+      console.error(err.message);
+      return null;
+    }
   };
 
   return {

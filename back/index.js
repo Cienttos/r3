@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { obtenerUsuario, altaUsuario, bajaUsuario, modificarUsuario, listarUsuarios, eliminarUsuario } from './controller.js'; 
+import { obtenerUsuario, altaUsuario, bajaUsuario, modificarUsuario, listarUsuarios, eliminarUsuario, crearUsuario } from './controller.js'; 
 
 const app = express();
 app.use(express.json());
@@ -11,15 +11,32 @@ app.get('/', (req, res) => {
   res.send('Servidor corriendo');
 });
 
-app.post("/usuario/alta", async (req,res) => {
+app.post("/usuario/crear", async (req,res) => {
     try{
         const data = req.body;
-        const id = await altaUsuario(data)
+        const id = await crearUsuario(data)
         res.status(201).json({ message: 'Usuario agregado exitosamente', id });
     }catch(error){
         res.status(500).json({ error: 'Error al agregar usuario' });
     }
 })
+
+app.patch("/usuario/alta", async (req, res) => {
+    try {
+        const { id } = req.body;
+        const result = await altaUsuario(id);
+        if (result) {
+            res.status(200).json({ message: 'Usuario dado de alta exitosamente' });
+        }
+        else {
+            res.status(404).json({ message: 'Usuario no encontrado o ya activo' });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Error al dar de alta usuario' });
+    }
+});
+
 
 app.get("/usuario/obtener", async (req, res)=>{
     try {
@@ -50,7 +67,7 @@ app.patch("/usuario/modificar", async (req, res) => {
 });
 
 app.patch("/usuario/baja", async (req, res) => {
-    const { id } = req.query;
+    const { id } = req.body;
     try {
         const result = await bajaUsuario(id);
         if (result) {
@@ -71,8 +88,6 @@ app.get("/usuario/lista", async (req, res) => {
         res.status(500).json({ error: 'Error al listar usuarios' });
     }
 });
-
-app.get("/usu")
 
 app.delete("/usuario/eliminar", async (req, res) => {
     const { id } = req.query;

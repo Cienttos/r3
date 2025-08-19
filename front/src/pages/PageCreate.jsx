@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography, Alert, Stack } from '@mui/material'
 import { useUsuarios } from '../hooks/useUsuarios';
 
 export default function CrearUsuario() {
-  const { altaUsuario } = useUsuarios();
+  const { crearUsuario } = useUsuarios(); // <-- usar crearUsuario
   const [form, setForm] = useState({
     nombre: '', apellido: '', direccion: '', telefono: '', celular: '', fecha_nacimiento: '', email: '', contrasenia: ''
   });
@@ -15,8 +15,8 @@ export default function CrearUsuario() {
     e.preventDefault();
     setAlert({ type: '', message: '' });
     try {
-      const res = await altaUsuario(form);
-      if (res.id) {
+      const res = await crearUsuario(form); // <-- llamar a crearUsuario
+      if (res && res.id) {
         setAlert({ type: 'success', message: 'Usuario creado con éxito! ID: ' + res.id });
         setForm({ nombre: '', apellido: '', direccion: '', telefono: '', celular: '', fecha_nacimiento: '', email: '', contrasenia: '' });
       } else {
