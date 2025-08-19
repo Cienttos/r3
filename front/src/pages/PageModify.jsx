@@ -1,114 +1,97 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Box, Typography, Stack, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
-import { Close } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Box, Stack, TextField, Button, Typography, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
 
 export default function ModificarUsuario() {
-  const { buscarUsuario, modificarUsuario, eliminarUsuario } = useUsuarios();
+  const { obtenerUsuario, modificarUsuario, bajaUsuario } = useUsuarios();
   const [form, setForm] = useState({});
   const [snackbar, setSnackbar] = useState({ open:false, type:'', message:'' });
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [eliminarOpen, setEliminarOpen] = useState(false);
+  const [actionType, setActionType] = useState(''); // 'modificar' o 'baja'
   const location = useLocation();
   const navigate = useNavigate();
   const id = new URLSearchParams(location.search).get('id');
 
   useEffect(()=>{
     const cargar = async ()=>{
-      const user = await buscarUsuario(id);
+      const user = await obtenerUsuario(id);
       setForm(user);
     };
     cargar();
-  }, [id]);
+  },[id, obtenerUsuario]);
 
   const handleChange = e => {
     const { name, value } = e.target;
     let val = value.trimStart();
-    setForm(prev => ({ ...prev, [name]: val }));
+    if(name==='nombre' || name==='apellido') val = val.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g,'');
+    setForm({...form, [name]:val});
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
+  const handleAction = type => {
+    setActionType(type);
     setConfirmOpen(true);
   };
 
-  const confirmarModificar = async () => {
+  const confirmarAction = async () => {
     try{
-      await modificarUsuario(id, form);
-      setSnackbar({ open:true, type:'success', message:'Usuario modificado con éxito!' });
-    } catch(err){
-      setSnackbar({ open:true, type:'error', message:'Error: ' + err.message });
+      if(actionType==='modificar'){
+        await modificarUsuario(id, form);
+        setSnackbar({ open:true, type:'success', message:'Usuario modificado con éxito' });
+      } else if(actionType==='baja'){
+        await bajaUsuario(id);
+        setSnackbar({ open:true, type:'success', message:'Usuario dado de baja' });
+        navigate('/'); // volver a lista principal
+      }
+    }catch(err){
+      setSnackbar({ open:true, type:'error', message:'Error: '+err.message });
     }
     setConfirmOpen(false);
-  };
-
-  const handleEliminar = () => setEliminarOpen(true);
-  const confirmarEliminar = async () => {
-    try {
-      await eliminarUsuario(id);
-      setSnackbar({ open:true, type:'success', message:'Usuario eliminado correctamente' });
-      navigate('/');
-    } catch(err) {
-      setSnackbar({ open:true, type:'error', message:'Error: ' + err.message });
-    }
-    setEliminarOpen(false);
+    setActionType('');
   };
 
   return (
-    <Box sx={{ mt:4, maxWidth:600, mx:'auto' }}>
-      <Typography variant="h4" gutterBottom>Modificar Usuario</Typography>
-      <form onSubmit={handleSubmit}>
+    <Box sx={{ maxWidth:600, mx:'auto', mt:4 }}>
+      <Typography variant="h5" gutterBottom>Modificar Usuario</Typography>
+      <form>
         <Stack spacing={2}>
-          {Object.keys(form).map(key=>(
+          {['id','nombre','apellido','direccion','telefono','celular','fecha_nacimiento','email','contrasenia'].map(key=>(
             <TextField
               key={key}
-              label={key.replace(/_/g,' ')}
-              name={key}
-              value={form[key] || ''}
-              onChange={handleChange}
               fullWidth
+              type={key==='fecha_nacimiento'?'date':key==='email'?'email':key==='contrasenia'?'password':key==='id'?'number':'text'}
+              label={key.replace('_',' ').toUpperCase()}
+              name={key}
+              value={form[key]||''}
+              onChange={handleChange}
+              InputLabelProps={key==='fecha_nacimiento'?{shrink:true}:{}}
             />
           ))}
           <Stack direction="row" spacing={2}>
-            <Button type="submit" variant="contained" color="primary">Guardar cambios</Button>
-            <Button variant="outlined" color="error" onClick={handleEliminar}>Eliminar Usuario</Button>
+            <Button variant="contained" color="primary" onClick={()=>handleAction('modificar')}>Guardar Cambios</Button>
+            <Button variant="contained" color="error" onClick={()=>handleAction('baja')}>Dar de Baja</Button>
           </Stack>
         </Stack>
       </form>
 
-      {/* Confirmar modificación */}
-      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)}>
+      <Dialog open={confirmOpen} onClose={()=>setConfirmOpen(false)} PaperProps={{ sx:{borderRadius:2,p:2} }}>
         <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          Confirmar modificación
+          Confirmar {actionType==='modificar'?'modificación':'baja'}
           <IconButton onClick={()=>setConfirmOpen(false)} size="small"><Close /></IconButton>
         </DialogTitle>
-        <DialogContent>¿Desea guardar los cambios de este usuario?</DialogContent>
+        <DialogContent>
+          {actionType==='modificar'?'¿Desea guardar los cambios?':'¿Desea dar de baja a este usuario?'}
+        </DialogContent>
         <DialogActions>
           <Button onClick={()=>setConfirmOpen(false)}>Cancelar</Button>
-          <Button variant="contained" color="primary" onClick={confirmarModificar}>Confirmar</Button>
+          <Button color={actionType==='modificar'?'primary':'error'} variant="contained" onClick={confirmarAction}>
+            {actionType==='modificar'?'Guardar':'Dar de Baja'}
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Confirmar eliminar */}
-      <Dialog open={eliminarOpen} onClose={()=>setEliminarOpen(false)}>
-        <DialogTitle sx={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          Confirmar eliminación
-          <IconButton onClick={()=>setEliminarOpen(false)} size="small"><Close /></IconButton>
-        </DialogTitle>
-        <DialogContent>¿Desea eliminar este usuario?</DialogContent>
-        <DialogActions>
-          <Button onClick={()=>setEliminarOpen(false)}>Cancelar</Button>
-          <Button variant="contained" color="error" onClick={confirmarEliminar}>Eliminar</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={()=>setSnackbar(prev=>({...prev, open:false}))}
-        anchorOrigin={{ vertical:'top', horizontal:'right' }}
-      >
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={()=>setSnackbar(prev=>({...prev, open:false}))} anchorOrigin={{ vertical:'bottom', horizontal:'center' }}>
         <Alert severity={snackbar.type} sx={{ width:'100%' }}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
