@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, Grid, Box } from '@mui/material';
+import {
+  Container,
+  Typography,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Snackbar,
+  Alert,
+  Grid,
+  Box
+} from '@mui/material';
 import { Person, Email, Home, PhoneAndroid, Phone, CalendarMonth, Lock } from '@mui/icons-material';
 import { useUsuarios } from '../hooks/useUsuarios';
 import UsuariosTable from '../components/UserTable';
@@ -39,18 +52,19 @@ export default function Home() {
   };
 
   const userFields = (user) => [
-    { icon: <Person color="primary"/>, label: 'Nombre', value: `${user.nombre} ${user.apellido}` },
-    { icon: <Home color="secondary"/>, label: 'Dirección', value: user.direccion },
-    { icon: <Phone color="success"/>, label: 'Teléfono', value: user.telefono },
-    { icon: <PhoneAndroid color="success"/>, label: 'Celular', value: user.celular },
-    { icon: <CalendarMonth color="action"/>, label: 'Nacimiento', value: user.fecha_nacimiento },
-    { icon: <Email color="error"/>, label: 'Email', value: user.email },
-    { icon: <Lock color="warning"/>, label: 'Contraseña', value: '••••••••' }
+    { icon: <Person color="primary" />, label: 'Nombre', value: `${user.nombre} ${user.apellido}` },
+    { icon: <Home color="secondary" />, label: 'Dirección', value: user.direccion },
+    { icon: <Phone color="success" />, label: 'Teléfono', value: user.telefono },
+    { icon: <PhoneAndroid color="success" />, label: 'Celular', value: user.celular },
+    { icon: <CalendarMonth color="action" />, label: 'Nacimiento', value: user.fecha_nacimiento },
+    { icon: <Email color="error" />, label: 'Email', value: user.email },
+    { icon: <Lock color="warning" />, label: 'Contraseña', value: '••••••••' }
   ];
 
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>Lista de Usuarios</Typography>
+
       {loading ? (
         <CircularProgress />
       ) : (
@@ -70,7 +84,8 @@ export default function Home() {
               <Grid item xs={12} key={idx}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {item.icon}
-                  <Typography variant="subtitle1"><strong>{item.label}:</strong> {item.value}</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>{item.label}:</Typography>
+                  <Typography variant="body1">{item.value}</Typography>
                 </Box>
               </Grid>
             ))}
@@ -90,8 +105,15 @@ export default function Home() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert severity={snackbar.type}>{snackbar.message}</Alert>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert severity={snackbar.type} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Container>
   );
